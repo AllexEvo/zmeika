@@ -4,14 +4,14 @@
 
 ## Скриншоты
 
-![1](https://github.com/AllexEvo/zmeika/assets/60837670/84ab8983-b65d-4ad2-864e-7ffd73c55290)
 *Код, написан на C#*
+![1](https://github.com/AllexEvo/zmeika/assets/60837670/84ab8983-b65d-4ad2-864e-7ffd73c55290)
 
-![2](https://github.com/AllexEvo/zmeika/assets/60837670/f59bc387-6778-47fd-81ce-a5d15b57822e)
 *Скрин игры*
+![2](https://github.com/AllexEvo/zmeika/assets/60837670/f59bc387-6778-47fd-81ce-a5d15b57822e)
 
-![3](https://github.com/AllexEvo/zmeika/assets/60837670/d31458e1-74d1-4d76-959e-ece9a1297361)
 *Окно смерти и рестарта игры*
+![3](https://github.com/AllexEvo/zmeika/assets/60837670/d31458e1-74d1-4d76-959e-ece9a1297361)
 
 
 ## Авторы
@@ -24,17 +24,17 @@
 
 ## Литература
 
-* [Аксенов, В. (2018). C# 7.0. Карманный справочник. ДМК Пресс.]
-* [Журавлев, В. (2014). C#. Объектно-ориентированное программирование. БХВ-Петербург.]
-* [Клименков, А. (2013). Игры и развлечения в среде Visual C#. Эксмо.]
-* [Макаров, А. (2017). Разработка компьютерных игр на языке C#. БХВ-Петербург.]
-* [Рихтер, Дж. (2014). CLR via C#. Программирование на платформе Microsoft .NET Framework 4.5 на языке C#. Питер.]
-* [Ситников, А. (2018). C# 7.0. Справочник. БХВ-Петербург.]
-* [Харрисон, Э., & Сперанский, Н. (2015). C# 6.0 и платформа .NET 4.6. Диа-лектика-Вильямс.]
-* [https://msdn.microsoft.com/ru-ru/]
-* Хабр - [https://habr.com/ru/]
-* C# Corner - [https://www.c-sharpcorner.com/]
-* CodeProject - [https://www.codeproject.com/]
-* Unity Developer Network (UDN) - [https://unity3d.com/ru/learn]
-* ITVDN - [https://itvdn.com/ru/]
+* Аксенов, В. (2018). C# 7.0. Карманный справочник. ДМК Пресс.
+* Журавлев, В. (2014). C#. Объектно-ориентированное программирование. БХВ-Петербург.
+* Клименков, А. (2013). Игры и развлечения в среде Visual C#. Эксмо.
+* Макаров, А. (2017). Разработка компьютерных игр на языке C#. БХВ-Петербург.
+* Рихтер, Дж. (2014). CLR via C#. Программирование на платформе Microsoft .NET Framework 4.5 на языке C#. Питер.
+* Ситников, А. (2018). C# 7.0. Справочник. БХВ-Петербург.
+* Харрисон, Э., & Сперанский, Н. (2015). C# 6.0 и платформа .NET 4.6. Диа-лектика-Вильямс.
+* https://msdn.microsoft.com/ru-ru/
+* Хабр - https://habr.com/ru/
+* C# Corner - https://www.c-sharpcorner.com/
+* CodeProject - https://www.codeproject.com/
+* Unity Developer Network (UDN) - https://unity3d.com/ru/learn
+* ITVDN - https://itvdn.com/ru/
 
