@@ -1,0 +1,414 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+
+class Program
+{
+    static int width = 40; // Ширина игрового поля
+    static int height = 20; // Высота игрового поля
+    static int score1 = 0; // Очки первого игрока
+    static int score2 = 0; // Очки второго игрфока
+    static int speed = 50; // Скорость движения змейки
+    static bool gameOver = false; // Флаг окончания игры
+    static bool snake1Collided = false; // Флаг проигрыша 1 игрока
+    static bool snake2Collided = false; // Флаг проигрыша 2 игрока
+    enum Direction  // Массив с возможными направлениями движения
+    {
+        Left,
+        Right,
+        Up,
+        Down
+    }
+
+    struct Position  // Объявление координат
+    {
+        public int x;
+        public int y;
+        public Position(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    static void Main()  // Основная функция
+    {
+        Console.Title = "Змейка: Восстание машин";  // Заголовок
+        Console.CursorVisible = false;  // Отображение курсора выкл
+        Console.SetWindowSize((width * 2 + 10) * 2, height + 5);  // Устанавливаем размер окна
+        Console.SetBufferSize((width * 2 + 10) * 2, height + 5);  // Устанавливаем буфер строк
+
+        DrawFrame();  // Рисуем игровое поле
+        StartGame();  // Запускаем логику игры
+        while (true)  // Цикл для рестарта
+        {
+            // Спросить у игроков, хотят ли они перезапустить игру
+            Console.Clear();  // Очищаем консоль
+            Console.WriteLine("Игрок 1: {0}", score1);  // Выводим очки 1 игрока при окончании игры
+            Console.WriteLine("Игрок 2: {0}", score2);  // Выводим очки 2 игрока при окончании игры
+            Console.WriteLine("Нажмите пробел для рестарта");  // Выводим вспомогательный текст
+            Console.WriteLine("Для выхода используйте 'ESC'"); //
+            ConsoleKeyInfo key1 = Console.ReadKey();   // Считываем нажатие клавиш
+            if (key1.Key == ConsoleKey.Escape)   // Проверяем нажата ли клавиша ескейп
+            {
+                // Если игроки хотят перезапустить игру, вызываем функцию RestartGame
+                break;
+            }
+            else if (key1.Key == ConsoleKey.Spacebar) // Проверяем нажата ли клавиша пробел
+            {
+                // Если игроки не хотят перезапускать игру, выходим из цикла и завершаем программу
+                RestartGame();   // Вызываем функцию рестарта игры
+            }
+        }
+    }
+
+    static void DrawFrame()   // Рисуем поле
+    {
+        Console.Clear();   // Очищаем консоль
+        int w = width + 2;   // Всспомогательная переменная для отрисовки игрового поля
+        Console.SetCursorPosition(0, 0);   // Устанавливаем курсор на начало координат
+        for (int i = 0; i < w; i++)   // Проходимся циклом по полю
+        {
+            Console.Write("_"); // Рисуем верхнюю границу 1 игрока
+        }
+        Console.SetCursorPosition(w, 0); // Проходимся циклом по полю
+        for (int i = 0; i < 10; i++)
+        {
+            Console.Write(" "); // Рисуем пустоту
+        }
+        Console.SetCursorPosition(w + 10, 0);
+        for (int i = 0; i < w; i++) // Проходимся циклом по полю
+        {
+            Console.Write("_"); // Рисуем верхнюю границу 2 игрока
+        }
+        Console.WriteLine(); //Переходим на следующую строку
+
+        // Игровое поле для первого игрока
+        for (int i = 0; i < height; i++) // Проходимся циклом по полю
+        {
+            Console.SetCursorPosition(0, i + 1); // Устанавливаем курсор на нужное положение
+            Console.Write("|"); // Рисуем левую стенку
+            Console.SetCursorPosition(width + 1, i + 1); // Устанавливаем курсор на нужное положение
+            Console.Write("|"); // Рисуем правую стенку
+        }
+
+        Console.SetCursorPosition(0, height + 1); // Устанавливаем курсор на нужное положение
+        for (int i = 0; i < w; i++) // Проходимся циклом по полю
+        {
+            Console.Write("-"); // Рисуем нижнюю границу для первого игрока
+        }
+        Console.WriteLine(); //Переходим на следующую строку
+
+        // Очки первого игрока
+        Console.SetCursorPosition(0, height + 2); // Устанавливаем курсор под полем 1 игрока
+        Console.WriteLine("Игрок 1: {0}", score1); // Выводим очки игрока 1
+
+        // Игровое поле для второго игрока
+        for (int i = 0; i < height; i++) // Проходимся циклом по полю
+        {
+            Console.SetCursorPosition(w + 10, i + 1);
+            Console.Write("|");
+            Console.SetCursorPosition(w + w + 10, i + 1);
+            Console.Write("|");
+        }
+
+        // Нижняя граница для второго игрока
+        Console.SetCursorPosition(w + 10, height + 1); // Устанавливаем курсор на нужное положение
+        for (int i = 0; i < w; i++) // Проходимся циклом по полю
+        {
+            Console.Write("-"); // Рисуем нижнюю границу для второго игрока
+        }
+        // Очки второго игрока
+        Console.SetCursorPosition(w + 10, height + 2); // Устанавливаем курсор под полем 2 игрока
+        Console.WriteLine("Игрок 2: {0}", score2); // Выводим очки игрока 2
+        Console.WriteLine(); //Переходим на следующую строку
+    }
+
+    static void StartGame()
+    {
+        // Инициализация позиций змеек
+        Position[] snake1 = new Position[100]; // Создаём массив змейки 1
+        Position[] snake2 = new Position[100]; // Создаём массив змейки 2
+        int snake1Length = 3; // Задаём стартовую длинну змейки 1
+        int snake2Length = 3; // Задаём стартовую длинну змейки 2
+
+        snake1[0] = new Position(width / 2, height / 2); // Задаём стартовую позицию змейки 1
+        snake2[0] = new Position((width / 2) + 2 + 5 + width, height / 2); // Задаём стартовую позицию змейки 2
+
+        DrawSnake(snake1, snake1Length, ConsoleColor.White); // Рисуем змейку 1
+        DrawSnake(snake2, snake2Length, ConsoleColor.White); // Рисуем змейку 2
+
+        Direction direction1 = Direction.Right; // Задаём стартовую траекторию змейки 1
+        Direction direction2 = Direction.Right; // Задаём стартовую траекторию змейки 2
+
+        Position food1 = GenerateFood(0, snake1, snake1Length); // Генерируем рандомную еду для змейки 1
+        Position food2 = GenerateFood(width + 2 + 10, snake2, snake2Length); // Генерируем рандомную еду для змейки 2
+
+        DrawFood(food1); // Рисуем еду для змейки 1
+        DrawFood(food2); // Рисуем еду для змейки 2
+
+        while (!gameOver)  // Пока игра не окончена
+        {
+            if (!snake2Collided)  // Проверяем врезалась ли змейка 2
+            {
+                // Управление для второго игрока
+                // Вторая змейка сама идет к еде, если следующая позиция перед едой
+                // Иначе, выбирает другое доступное направление
+                if (snake2[0].x < food2.x && direction2 != Direction.Left)  // Выбираем направление исходя из того где появилась еда
+                {
+                    Position nextPosition = new Position(snake2[0].x + 1, snake2[0].y);
+                    if (!CheckSelfCollision(snake2, snake2Length) && !IsPositionOccupiedBySnake(nextPosition, snake2, snake2Length)) // Проверяем не столкнется ли змейка с самим собой
+                        direction2 = Direction.Right; // Направление вправо
+                    else if (snake2[0].y < food2.y && direction2 != Direction.Up)  // Если еда находится слева от змейки и направление не вверх
+                        direction2 = Direction.Down; // Направление вниз
+                    else if (snake2[0].y > food2.y && direction2 != Direction.Down)  // Если еда находится справа от змейки и направление не вниз
+                        direction2 = Direction.Up; // Направление вверх
+                }
+                else if (snake2[0].x > food2.x && direction2 != Direction.Right)  // Выбираем направление исходя из того где появилась еда
+                {
+                    Position nextPosition = new Position(snake2[0].x - 1, snake2[0].y);
+                    if (!CheckSelfCollision(snake2, snake2Length) && !IsPositionOccupiedBySnake(nextPosition, snake2, snake2Length)) // Проверяем не столкнется ли змейка с самим собой
+                        direction2 = Direction.Left; // Направление влево
+                    else if (snake2[0].y < food2.y && direction2 != Direction.Up)  // Если еда находится слева от змейки и направление не вверх
+                        direction2 = Direction.Down; // Направление вниз
+                    else if (snake2[0].y > food2.y && direction2 != Direction.Down)  // Если еда находится справа от змейки и направление не вниз
+                        direction2 = Direction.Up; // Направление вверх
+                }
+                else if (snake2[0].y < food2.y && direction2 != Direction.Up)  // Выбираем направление исходя из того где появилась еда
+                {
+                    Position nextPosition = new Position(snake2[0].x, snake2[0].y + 1);
+                    if (!CheckSelfCollision(snake2, snake2Length) && !IsPositionOccupiedBySnake(nextPosition, snake2, snake2Length)) // Проверяем не столкнется ли змейка с самим собой
+                        direction2 = Direction.Down; // Направление вниз
+                    else if (snake2[0].x < food2.x && direction2 != Direction.Left)  // Если еда находится слева от змейки и направление не влево
+                        direction2 = Direction.Right; // Направление вправо
+                    else if (snake2[0].x > food2.x && direction2 != Direction.Right)  // Если еда находится справа от змейки и направление не вправо
+                        direction2 = Direction.Left; // Направление влево
+                }
+                else if (snake2[0].y > food2.y && direction2 != Direction.Down)  // Выбираем направление исходя из того где появилась еда
+                {
+                    Position nextPosition = new Position(snake2[0].x, snake2[0].y - 1);
+                    if (!CheckSelfCollision(snake2, snake2Length) && !IsPositionOccupiedBySnake(nextPosition, snake2, snake2Length)) // Проверяем не столкнется ли змейка с самим собой
+                        direction2 = Direction.Up; // Направление вверх
+                    else if (snake2[0].x < food2.x && direction2 != Direction.Left)  // Если еда находится слева от змейки и направление не влево
+                        direction2 = Direction.Right; // Направление вправо
+                    else if (snake2[0].x > food2.x && direction2 != Direction.Right)  // Если еда находится справа от змейки и направление не вправо
+                        direction2 = Direction.Left; // Направление влево
+                }
+
+                // Проверка на столкновение со стенками и уход от этого
+                if (snake2[0].x == 0 && direction2 == Direction.Left) // Если змейка врежется влево, и направление влево
+                    direction2 = Direction.Up;  // Направление вверх
+                else if (snake2[0].x == width - 1 && direction2 == Direction.Right) // Если змейка врежется вправо, и направление вправо
+                    direction2 = Direction.Down; // Направление вниз
+                else if (snake2[0].y == 2 && direction2 == Direction.Up) // Если змейка врежется вверх, и направление вверх
+                    direction2 = Direction.Right; // Направление вправо
+                else if (snake2[0].y == height - 1 && direction2 == Direction.Down) // Если змейка врежется вниз, и направление вниз
+                    direction2 = Direction.Left;// Направление влево
+
+                bool IsPositionOccupiedBySnake(Position position, Position[] snake, int snakeLength)  // Занята ли ячейка на поле хвостом змейки
+                {
+                    for (int i = 0; i < snakeLength; i++) // Проходимся циклом по хвоству змейки
+                    {
+                        if (snake[i].x == position.x && snake[i].y == position.y)   // Если новая позиция змейки совпадает с хвостом змейки
+                            return true;  // Если да вывести тру
+                    }
+                    return false;  // Если да вывести фалс
+                }
+
+                if (snake2[0].x == food2.x && snake2[0].y == food2.y)  // Если змейка 2 съела еду
+                {
+                    score2++;  // Добавляем очки змейки 2
+                    snake2Length++;  // Увеличиваем длинну змейки 2 на 1 клетку
+                    food2 = GenerateFood(width + 10 + 2, snake2, snake2Length);  // Создаём новую еду для змейки 2
+                    DrawFood(food2);  // Нарисовать еду для змейки 2
+
+                    // Очки второго игрока
+                    Console.ForegroundColor = ConsoleColor.White;  // Устанавливаем цвет консоли - белый
+                    Console.SetCursorPosition(width + 2 + 10, height + 2);  // Устанавливаем позицию курсора под игровым полем 2
+                    Console.WriteLine("Игрок 2: {0}", score2);  // Выводим счётчик очков в реальном времени
+                }
+
+                MoveSnake(snake2, ref snake2Length, direction2, width + 2 + 10);   // Двигаем змейку исходя из её нового положения и длинны
+            }
+
+            if (!snake1Collided)   // Пока змейка 1 не проиграла
+            {
+                if (Console.KeyAvailable)   // Если кнопка нажата
+                {
+                    ConsoleKeyInfo key = Console.ReadKey(true);   // Читаем нажатую кнопку
+
+                    // Управление для первого игрока
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.A:   // Если нажата кнопка А
+                            if (direction1 != Direction.Right)   // И направление не вправо
+                                direction1 = Direction.Left;   // Новое направление влево
+                            break;   // Выходим
+                        case ConsoleKey.D:   // Если нажата кнопка D
+                            if (direction1 != Direction.Left)   // И направление не влево
+                                direction1 = Direction.Right;   // Новое направление вправо
+                            break;   // Выходим
+                        case ConsoleKey.W:   // Если нажата кнопка W
+                            if (direction1 != Direction.Down)   // И направление не вниз
+                                direction1 = Direction.Up;   // Новое направление вверх
+                            break;   // Выходим
+                        case ConsoleKey.S:   // Если нажата кнопка S
+                            if (direction1 != Direction.Up)   // И направление не вверх
+                                direction1 = Direction.Down;   // Новое направление вниз
+                            break;   // Выходим
+                    }
+                }
+                if (snake1[0].x == food1.x && snake1[0].y == food1.y)   // Если позиция еды совпадает с позицией еды
+                {
+                    score1++;   // Прибовляем очки змейке 1
+                    if (speed >= 50)
+                        speed = speed - 20;
+                    snake1Length++;   // Добавляем длинну змейке
+                    food1 = GenerateFood(0, snake1, snake1Length);   // Создаём новую еду
+                    DrawFood(food1);   // Рисуем новую еду
+
+                    // Очки первого игрока
+                    Console.ForegroundColor = ConsoleColor.White;   // Устанавливаем цвет текста белый
+                    Console.SetCursorPosition(0, height + 2);   // Устанавливаем курсор под полем первого игрока
+                    Console.WriteLine("Игрок 1: {0}", score1);   // Отображаем счётчик очков первого игрока в реальном времени
+                }
+                MoveSnake(snake1, ref snake1Length, direction1, 0);   // Двигаем змейку исходя из её нового положения и длинны
+            }
+            CheckCollision(snake1, snake1Length, snake2, snake2Length); // Проверка столкновения змеек с окружением
+            Thread.Sleep(speed); // Пауза - скорость игры
+        }
+    }
+
+    static void DrawSnake(Position[] snake, int snakeLength, ConsoleColor color) // Функция отображения змейки на поле
+    {
+        for (int i = 0; i < snakeLength; i++) // Проходимся по длинне змейки циклом
+        {
+            Console.SetCursorPosition(snake[i].x, snake[i].y); // Устанавливаем курсор на текущем положении змейки в цикле
+            Console.ForegroundColor = color; // Устанавливаем цвет змейки
+            if (i == 0) // Проверка является ли головой
+            {
+                Console.ForegroundColor = ConsoleColor.Green; // Если да - цвет головы зеленый
+                Console.Write("■");  // Рисуем голову
+            }
+            else
+                Console.Write("■");  // Если нет - рисуем тело
+        }
+    }
+
+    static void MoveSnake(Position[] snake, ref int snakeLength, Direction direction, int xOffset) // функция для движения змейки
+    {
+        Position[] newSnake = new Position[100]; //  установка позиции змейки 
+        newSnake[0] = snake[0]; // новое голова
+        for (int i = 1; i < snakeLength; i++) // условие для хвоста 
+        {
+            newSnake[i] = snake[i - 1]; // добавление хвоста 
+        }
+
+        switch (direction) // смена направления
+        {
+            case Direction.Left: // кейс для движения влево
+                newSnake[0].x--; // передвижение по Х влево
+                break;   // Выходим 
+            case Direction.Right: // кейс для движения вправо 
+                newSnake[0].x++; // передвижение по Х вправо
+                break;   // Выходим
+            case Direction.Up: // кейс для движения вверх 
+                newSnake[0].y--; // передвижение по Y вверх
+                break;   // Выходим
+            case Direction.Down: // кейс для движения вниз
+                newSnake[0].y++; // передвижение по Y вниз
+                break;   // Выходим
+        }
+        DrawSnake(snake, snakeLength, ConsoleColor.Black); // рисуем змейку
+
+        snakeLength = Math.Min(snakeLength, width * height); // расчитываем длину змейки
+
+        for (int i = 0; i < snakeLength; i++) // условие для хвоста 
+        {
+            snake[i] = newSnake[i]; // смещение хвоста
+        }
+
+        DrawSnake(snake, snakeLength, ConsoleColor.White); // рисуем змейку
+    }
+
+    static void CheckCollision(Position[] snake1, int snake1Length, Position[] snake2, int snake2Length) // функция проверки на столкновения 
+    {
+        if (snake1[0].x == 1 || snake1[0].x == width || snake1[0].y == 0 || snake1[0].y == height) // условие столконевия со стеной 1 игрока 
+        {
+            snake1Collided = true; // проигрыш 1 игрока
+        }
+
+        if (snake2[0].x == width + 3 + 10 || snake2[0].x == width + width + 2 + 1 + 10 || snake2[0].y == 1 || snake2[0].y == height) // условие столкновения со стеной 2 игрока 
+        {
+            snake2Collided = true; // проигрыш 2 игрока
+        }
+
+        for (int i = 1; i < snake1Length; i++) // условиие для хвоста змейки 1
+        {
+            if (snake1[i].x == snake1[0].x && snake1[i].y == snake1[0].y) // условие столкновения головы с хвостом 1 игрока
+            {
+                snake1Collided = true; // проигрыш 1 игрока
+                break;   // Выходим
+            }
+        }
+
+        for (int i = 1; i < snake2Length; i++) // условие для хвоста змейки 2
+        {
+            if (snake2[i].x == snake2[0].x && snake2[i].y == snake2[0].y) // условие столкновения головы с хвостом 2 игрока
+            {
+                snake2Collided = true; // проигрыш 2 игрока
+                break;   // Выходим
+            }
+        }
+
+        gameOver = snake1Collided && snake2Collided; // чему равен конец игры
+
+        if (gameOver) // условие после окончания игры
+        {
+            Console.SetCursorPosition(0, height + 4); // установка курсора
+            Console.WriteLine("Игра окончена!"); // вывод текста
+        }
+    }
+
+    static Position GenerateFood(int xOffset, Position[] snake, int snakeLength) // функция создания еды
+    {
+        Random random = new Random(); // переменная рандома
+        int x = random.Next(2, width - 2) + xOffset; // рандомное появление еды по Х
+        int y = random.Next(2, height - 2); // рандомное появление еды по Y
+        for (int i = 1; i < snakeLength; i++) // условиеи для хвоста змейки
+        {
+            if (snake[i].x == x && snake[i].y == y) // условие когда еда появляется в хвосте змейки
+                return GenerateFood(xOffset, snake, snakeLength); // возвращение к функции генерации еды
+        }
+        return new Position(x, y); // создание еды 
+    }
+
+    static void DrawFood(Position food) // функция прорисовки еды
+    {
+        Console.SetCursorPosition(food.x, food.y); // установка курсор на нужное место
+        Console.ForegroundColor = ConsoleColor.Red; // изменение цвета еды
+        Console.Write("*"); // обозначение еды
+    }
+    static void RestartGame() // функциия перезапуск игры
+    {
+        speed = 300; // начальная скорость
+        score1 = 0; // начальный счёт 1 поля
+        score2 = 0; // начальный счёт 2 поля
+        snake1Collided = false; // проигрыш 1 игрока
+        snake2Collided = false; // проигрыш 2 игрока
+        gameOver = false; // конец игры
+        DrawFrame(); // создание поля 
+        StartGame(); // начало игры
+    }
+    static bool CheckSelfCollision(Position[] snake, int snakeLength) // функция проверки на столкновение с собой 
+    {
+        for (int i = 1; i < snakeLength; i++) // условие для хвоста змейки
+        {
+            if (snake[i].x == snake[0].x && snake[i].y == snake[0].y) // условие если голова врезается в хвост
+                return true; // выводим true
+        }
+        return false; // выводим false
+    }
+
+}
